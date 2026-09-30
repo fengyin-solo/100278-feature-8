@@ -21,6 +21,14 @@ class Store:
     def rows(self, module: str) -> list[dict[str, Any]]:
         return self._tables.setdefault(module, [])
 
+    def table(self, module: str) -> list[dict[str, Any]]:
+        """读取一张表但不主动创建空表（台账这类懒加载模块用）。"""
+        return list(self._tables.get(module, []))
+
+    def next_id(self, module: str) -> int:
+        """给指定模块生成下一条自增主键。"""
+        return max((int(row.get("id", 0)) for row in self.rows(module)), default=0) + 1
+
     def find(self, module: str, entry_id: int) -> dict[str, Any] | None:
         for row in self.rows(module):
             if int(row.get("id", 0)) == entry_id:
